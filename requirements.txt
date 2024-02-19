@@ -4,6 +4,6 @@ NumPy
 Matplotlib
 Holidays
 XGBoost
-Plotly Express
+plotly-express
 Base64
 Scikit-learn
