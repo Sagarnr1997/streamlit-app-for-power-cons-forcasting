@@ -161,38 +161,6 @@ with st.container():
                 
         for date in dates:
             print(date)
-        X = power_conspution[['Day', 'year', 'month', 'hour', 'name_of_week', 'season', 'holiday']]
-        Y = power_conspution[['PJMW_MW']]
-        
-        model = xgb.XGBRegressor(base_score=1, booster='gbtree',    
-                                 n_estimators=1000,
-                                 objective='reg:squarederror',
-                                 max_depth=10,
-                                 learning_rate=0.1, gamma=1)
-        model.fit(X, Y, verbose=100)    
-        new_data=pd.DataFrame({'Datetime':dates})
-        new_data['Day']=new_data['Datetime'].dt.day
-        new_data['dayofyear']=new_data['Datetime'].dt.dayofyear
-        new_data['year']=new_data['Datetime'].dt.year
-        new_data['month']=new_data['Datetime'].dt.month
-        new_data['hour']=new_data['Datetime'].dt.hour
-        new_data['name_of_week']=new_data['Datetime'].dt.isocalendar().week
-        new_data['name_of_week']=new_data['name_of_week'].astype(np.int32)
-        new_data['season']=new_data['Datetime'].apply(lambda x: 'Winter' if x.month == 12 or x.month == 1 or x.month == 2  else 'Spring' if x.month==3 or x.month==4 or x.month==5 else 'Summer' if x.month==6 or x.month==7 or x.month==8 else 'Autumn' if x.month==9 or x.month==10 or x.month==11 else "")
-        holidays=holidays
-        new_data['holiday']=new_data.index.map(lambda x:x in holidays)
-        new_data['season']=LabelEncoder().fit_transform(new_data['season'])
-        new_data['holiday']=LabelEncoder().fit_transform(new_data['holiday'])
-        new_data=new_data.set_index('Datetime')
-        x=new_data[['Day','year','month','hour', 'name_of_week', 'season','holiday']]
-        new_data['prediction'] = model.predict(new_data[['Day','year','month','hour', 'name_of_week', 'season','holiday']])
-        st.header('Next 30 days with 24hours prediction is as fallows')  
-        st.write(new_data['prediction'].head(15))
-        #let me plot the prediction
-        st.header('30 days prediction using xg boost')
-        fig=px.line(new_data,x=new_data.index,y=new_data['prediction'])
-        fig.update_traces(line_color='firebrick')
-        st.plotly_chart(fig)
 
 
     elif active_tab == "User inputs and prediction":
@@ -231,11 +199,46 @@ with st.container():
         # Creating the features
         power_conspution['season'] = LabelEncoder().fit_transform(power_conspution['season'])
         power_conspution['holiday'] = LabelEncoder().fit_transform(power_conspution['holiday'])
+
+
+         X = power_conspution[['Day', 'year', 'month', 'hour', 'name_of_week', 'season', 'holiday']]
+        Y = power_conspution[['PJMW_MW']]
+        
+        model = xgb.XGBRegressor(base_score=1, booster='gbtree',    
+                                 n_estimators=1000,
+                                 objective='reg:squarederror',
+                                 max_depth=10,
+                                 learning_rate=0.1, gamma=1)
+        model.fit(X, Y, verbose=100)    
         
         if st.button("Predict"):   
             prediction = model.predict(df)
             st.subheader('Predicted Result')
             st.success('The output is {}MW'.format(np.round(prediction,2)))
+
+        new_data=pd.DataFrame({'Datetime':dates})
+        new_data['Day']=new_data['Datetime'].dt.day
+        new_data['dayofyear']=new_data['Datetime'].dt.dayofyear
+        new_data['year']=new_data['Datetime'].dt.year
+        new_data['month']=new_data['Datetime'].dt.month
+        new_data['hour']=new_data['Datetime'].dt.hour
+        new_data['name_of_week']=new_data['Datetime'].dt.isocalendar().week
+        new_data['name_of_week']=new_data['name_of_week'].astype(np.int32)
+        new_data['season']=new_data['Datetime'].apply(lambda x: 'Winter' if x.month == 12 or x.month == 1 or x.month == 2  else 'Spring' if x.month==3 or x.month==4 or x.month==5 else 'Summer' if x.month==6 or x.month==7 or x.month==8 else 'Autumn' if x.month==9 or x.month==10 or x.month==11 else "")
+        holidays=holidays
+        new_data['holiday']=new_data.index.map(lambda x:x in holidays)
+        new_data['season']=LabelEncoder().fit_transform(new_data['season'])
+        new_data['holiday']=LabelEncoder().fit_transform(new_data['holiday'])
+        new_data=new_data.set_index('Datetime')
+        x=new_data[['Day','year','month','hour', 'name_of_week', 'season','holiday']]
+        new_data['prediction'] = model.predict(new_data[['Day','year','month','hour', 'name_of_week', 'season','holiday']])
+        st.header('Next 30 days with 24hours prediction is as fallows')  
+        st.write(new_data['prediction'].head(15))
+        #let me plot the prediction
+        st.header('30 days prediction using xg boost')
+        fig=px.line(new_data,x=new_data.index,y=new_data['prediction'])
+        fig.update_traces(line_color='firebrick')
+        st.plotly_chart(fig)
 
 hide_st_style = """
              <style>
