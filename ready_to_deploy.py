@@ -83,8 +83,6 @@ power_conspution=power_conspution.reset_index()
 power_conspution=power_conspution.drop('index',axis=1)
 power_conspution['season']=LabelEncoder().fit_transform(power_conspution['season'])
 power_conspution['holiday']=LabelEncoder().fit_transform(power_conspution['holiday'])
-st.sidebar.header('User Input Parameters')
-
 
 #data imputation
 power_conspution.iloc[10148,1]=4560
@@ -200,6 +198,7 @@ with st.container():
 
 
     elif active_tab == "User inputs and prediction":
+        st.sidebar.header('User Input Parameters')
         st.sidebar.subheader('Uploading the Dataset')
         def user_input_features():
             Day = st.sidebar.selectbox('please enter the date ie.day',(range(1,32,1)))
