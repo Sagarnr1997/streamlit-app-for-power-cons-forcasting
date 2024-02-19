@@ -99,16 +99,6 @@ q=power_conspution.iloc[112903:112975,1]
 power_conspution.iloc[112999:113071,1]=q
 power_conspution = power_conspution.dropna()
 
-X = power_conspution[['Day', 'year', 'month', 'hour', 'name_of_week', 'season', 'holiday']]
-Y = power_conspution[['PJMW_MW']]
-        
-model = xgb.XGBRegressor(base_score=1, booster='gbtree',    
-                                 n_estimators=1000,
-                                 objective='reg:squarederror',
-                                 max_depth=10,
-                                 learning_rate=0.1, gamma=1)
-model.fit(X, Y, verbose=100)
-
 with st.container():
     tabs =["About Project and their objectives","User inputs and prediction"]
     active_tab =st.radio("Select a tab",tabs)
@@ -171,7 +161,15 @@ with st.container():
                 
         for date in dates:
             print(date)
-            
+        X = power_conspution[['Day', 'year', 'month', 'hour', 'name_of_week', 'season', 'holiday']]
+        Y = power_conspution[['PJMW_MW']]
+        
+        model = xgb.XGBRegressor(base_score=1, booster='gbtree',    
+                                 n_estimators=1000,
+                                 objective='reg:squarederror',
+                                 max_depth=10,
+                                 learning_rate=0.1, gamma=1)
+        model.fit(X, Y, verbose=100)    
         new_data=pd.DataFrame({'Datetime':dates})
         new_data['Day']=new_data['Datetime'].dt.day
         new_data['dayofyear']=new_data['Datetime'].dt.dayofyear
