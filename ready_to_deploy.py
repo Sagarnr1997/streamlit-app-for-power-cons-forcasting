@@ -67,9 +67,6 @@ st.markdown('##')
 st.markdown(page_bg_img,unsafe_allow_html=True)
 st.markdown(html_temp, unsafe_allow_html = True)
 
-
-
-st.sidebar.subheader('Uploading the Dataset')
 power_conspution = get_data()
 power_conspution=power_conspution.sort_values('Datetime')
 power_conspution['Day']=power_conspution['Datetime'].dt.day
@@ -196,15 +193,7 @@ st.header('30 days prediction using xg boost')
 fig=px.line(new_data,x=new_data.index,y=new_data['prediction'])
 fig.update_traces(line_color='firebrick')
 st.plotly_chart(fig)
-hide_st_style = """
-             <style>
-             mainmenu {visibility: hidden;}
-             footer {visibility: hidden;}
-             header {visibility: hidden;}
-             </style>"""
-             
-st.markdown(hide_st_style, unsafe_allow_html=True)
-
+st.sidebar.subheader('Uploading the Dataset')
 def user_input_features():
     Day = st.sidebar.selectbox('please enter the date ie.day',(range(1,32,1)))
     year = st.sidebar.selectbox('which year data you need to see',(range(2002,2019,1)))
@@ -253,3 +242,12 @@ if st.button("Predict"):
     prediction = model.predict(df)
     st.subheader('Predicted Result')
     st.success('The output is {}MW'.format(np.round(prediction,2)))
+
+hide_st_style = """
+             <style>
+             mainmenu {visibility: hidden;}
+             footer {visibility: hidden;}
+             header {visibility: hidden;}
+             </style>"""
+             
+st.markdown(hide_st_style, unsafe_allow_html=True)
