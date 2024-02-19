@@ -113,10 +113,7 @@ model=xgb.XGBRegressor(base_score=1, booster='gbtree',
                        learning_rate=0.1,gamma=1)
 model.fit(X, Y,verbose=100)
 
-  
-prediction = model.predict(df)
-st.subheader('Predicted Result')
-st.success('The output is {}MW'.format(np.round(prediction,2)))
+
 
 st.subheader('Power consuption data from 2002 to 2018')
 fig=px.line(power_conspution,x=power_conspution.index,y=power_conspution['PJMW_MW'])
