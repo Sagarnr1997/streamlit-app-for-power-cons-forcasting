@@ -211,8 +211,8 @@ with st.container():
                           learning_rate=0.1, 
                           gamma=1,
                           tree_method='gpu_hist',  # Use GPU acceleration
-                          verbose=100)
-        model.fit(X, Y)
+                          )
+        model.fit(X, Y,verbose=100)
         
         if st.button("Predict"):   
             prediction = model.predict(df)
