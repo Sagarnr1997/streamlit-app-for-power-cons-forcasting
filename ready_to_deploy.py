@@ -67,35 +67,7 @@ st.markdown('##')
 st.markdown(page_bg_img,unsafe_allow_html=True)
 st.markdown(html_temp, unsafe_allow_html = True)
 
-def user_input_features():
-    Day = st.sidebar.selectbox('please enter the date ie.day',(range(1,32,1)))
-    year = st.sidebar.selectbox('which year data you need to see',(range(2002,2019,1)))
-    month = st.sidebar.selectbox('please enter the month',(1,2,3,4,5,6,7,8,9,10,11,12))
-    hour = st.sidebar.selectbox("Insert the time",(range(0,24,1)))
-    name_of_week = st.sidebar.selectbox("Insert name of week",(range(0,853,1)))
-    st.sidebar.header('*Enter 1 if month starts from march 20 and ends at june 20')
-    st.sidebar.header('*Enter 2 if month starts from june 21 and ends at sept 22')
-    st.sidebar.header('*Enter 0 if month starts from sept 23 and ends at Dec 21')
-    st.sidebar.header('*Enter 3 if month starts from dec 22 and ends at march19')
-    season=st.sidebar.selectbox("Insert the time",(0,1,2,3))
-    st.sidebar.header('*Enter 1 if there is holiday other wise enter 0')
-    holiday=st.sidebar.selectbox('select 1 if there is holiday other wise 0',(0,1))
-        
-    data = {'Day':Day,
-            'year':year,
-            'month':month,
-            'hour':hour,
-            'name_of_week':name_of_week,
-            'season':season,
-            'holiday':holiday
-            }
-    
-    features = pd.DataFrame(data,index = [0])
-    return features 
 
-df = user_input_features()
-st.subheader('User Input parameters')
-st.write(df)
 
 st.sidebar.subheader('Uploading the Dataset')
 power_conspution = get_data()
@@ -235,3 +207,52 @@ hide_st_style = """
              </style>"""
              
 st.markdown(hide_st_style, unsafe_allow_html=True)
+
+def user_input_features():
+    Day = st.sidebar.selectbox('please enter the date ie.day',(range(1,32,1)))
+    year = st.sidebar.selectbox('which year data you need to see',(range(2002,2019,1)))
+    month = st.sidebar.selectbox('please enter the month',(1,2,3,4,5,6,7,8,9,10,11,12))
+    hour = st.sidebar.selectbox("Insert the time",(range(0,24,1)))
+    name_of_week = st.sidebar.selectbox("Insert name of week",(range(0,853,1)))
+    st.sidebar.header('*Enter 1 if month starts from march 20 and ends at june 20')
+    st.sidebar.header('*Enter 2 if month starts from june 21 and ends at sept 22')
+    st.sidebar.header('*Enter 0 if month starts from sept 23 and ends at Dec 21')
+    st.sidebar.header('*Enter 3 if month starts from dec 22 and ends at march19')
+    season=st.sidebar.selectbox("Insert the time",(0,1,2,3))
+    st.sidebar.header('*Enter 1 if there is holiday other wise enter 0')
+    holiday=st.sidebar.selectbox('select 1 if there is holiday other wise 0',(0,1))
+        
+    data = {'Day':Day,
+            'year':year,
+            'month':month,
+            'hour':hour,
+            'name_of_week':name_of_week,
+            'season':season,
+            'holiday':holiday
+            }
+    
+    features = pd.DataFrame(data,index = [0])
+    return features 
+    
+df = user_input_features()
+st.subheader('User Input parameters')
+st.write(df)
+
+# Creating the features
+power_conspution['season'] = LabelEncoder().fit_transform(power_conspution['season'])
+power_conspution['holiday'] = LabelEncoder().fit_transform(power_conspution['holiday'])
+
+X = power_conspution[['Day', 'year', 'month', 'hour', 'name_of_week', 'season', 'holiday']]
+Y = power_conspution[['PJMW_MW']]
+
+model = xgb.XGBRegressor(base_score=1, booster='gbtree',    
+                         n_estimators=1000,
+                         objective='reg:squarederror',
+                         max_depth=10,
+                         learning_rate=0.1, gamma=1)
+model.fit(X, Y, verbose=100)
+
+if st.button("Predict"):   
+    prediction = model.predict(df)
+    st.subheader('Predicted Result')
+    st.success('The output is {}MW'.format(np.round(prediction,2)))
