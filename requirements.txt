@@ -6,3 +6,4 @@ Holidays
 XGBoost
 plotly-express
 Scikit-learn
+openpyxl
