@@ -201,7 +201,7 @@ with st.container():
         power_conspution['holiday'] = LabelEncoder().fit_transform(power_conspution['holiday'])
 
 
-         X = power_conspution[['Day', 'year', 'month', 'hour', 'name_of_week', 'season', 'holiday']]
+        X = power_conspution[['Day', 'year', 'month', 'hour', 'name_of_week', 'season', 'holiday']]
         Y = power_conspution[['PJMW_MW']]
         
         model = xgb.XGBRegressor(base_score=1, booster='gbtree',    
