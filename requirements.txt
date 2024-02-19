@@ -5,5 +5,4 @@ Matplotlib
 Holidays
 XGBoost
 plotly-express
-Base64
 Scikit-learn
