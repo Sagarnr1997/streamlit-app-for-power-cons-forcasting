@@ -14,6 +14,16 @@ import plotly.express as px
 import base64
 import datetime
 from sklearn.preprocessing import LabelEncoder
+import requests
+from io import BytesIO
+
+# Function to fetch data from GitHub repository
+@st.cache
+def get_data():
+    url = 'https://github.com/Sagarnr1997/streamlit-app-for-power-cons-forcasting/raw/master/PJMW_MW_Hourly.xlsx'
+    response = requests.get(url)
+    excel_data = response.content
+    return pd.read_excel(BytesIO(excel_data))
 
 @st.cache_data
 def get_img_as_base64(file):
@@ -88,7 +98,7 @@ st.subheader('User Input parameters')
 st.write(df)
 
 st.sidebar.subheader('Uploading the Dataset')
-power_conspution = pd.read_excel('PJMW_MW_Hourly.xlsx')
+power_conspution = get_data()
 power_conspution=power_conspution.sort_values('Datetime')
 power_conspution['Day']=power_conspution['Datetime'].dt.day
 power_conspution['dayofyear']=power_conspution['Datetime'].dt.dayofyear
@@ -147,7 +157,7 @@ st.plotly_chart(fig)
 
 #ploting pie plots for visual understandings 
     
-new_d=pd.read_excel('PJMW_MW_Hourly.xlsx')
+new_d=get_data()
 new_d=new_d.sort_values('Datetime')
 new_d['Day']=new_d['Datetime'].dt.day
 new_d['dayofyear']=new_d['Datetime'].dt.dayofyear
