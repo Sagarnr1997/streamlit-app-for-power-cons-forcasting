@@ -118,7 +118,7 @@ fig.update_traces(line_color='firebrick')
 st.plotly_chart(fig)
 
 # Plotting pie plots for visual understandings
-new_d = power_conspution.copy()
+new_d = get_data()
 new_d['Day'] = new_d['Datetime'].dt.day
 new_d['dayofyear'] = new_d['Datetime'].dt.dayofyear
 new_d['year'] = new_d['Datetime'].dt.year
