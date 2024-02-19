@@ -13,13 +13,26 @@ import xgboost as xgb
 import plotly.express as px
 import base64
 from sklearn.preprocessing import LabelEncoder
+import requests
+from io import BytesIO
 
+# Function to fetch data from GitHub repository
+@st.cache
+def get_data():
+    url = 'https://github.com/Sagarnr1997/streamlit-app-for-power-cons-forcasting/raw/master/PJMW_MW_Hourly.xlsx'
+    response = requests.get(url)
+    excel_data = response.content
+    return pd.read_excel(BytesIO(excel_data))
+
+# Load Excel data
+power_conspution = get_data()
+
+# Function to convert image to base64
 @st.cache_data
 def get_img_as_base64(file):
     with open(file, "rb") as f:
         data = f.read()
     return base64.b64encode(data).decode()
-
 
 img = get_img_as_base64("power.jpg")
 
@@ -46,96 +59,97 @@ right: 2rem;
 }}
 </style>
 """
+
 html_temp = """
  <div style ="background-color:lightseagreen;padding:13px">
  <h1 style ="color:black;text-align:center;">Model Deployment:Streamlit Time Series Forcasting on power conspution using XG boosting </h1>
  </div>
  """
+
 st.title(":bar_chart: Time Series Forcasting")
 st.markdown('##')
 st.markdown(page_bg_img,unsafe_allow_html=True)
 st.markdown(html_temp, unsafe_allow_html = True)
 
-
 st.sidebar.subheader('Uploading the Dataset')
-power_conspution = pd.read_excel('PJMW_MW_Hourly.xlsx')
-power_conspution=power_conspution.sort_values('Datetime')
-power_conspution['Day']=power_conspution['Datetime'].dt.day
-power_conspution['dayofyear']=power_conspution['Datetime'].dt.dayofyear
-power_conspution['year']=power_conspution['Datetime'].dt.year
-power_conspution['month']=power_conspution['Datetime'].dt.month
-power_conspution['hour']=power_conspution['Datetime'].dt.hour
-power_conspution['name_of_week']=power_conspution['Datetime'].dt.isocalendar().week
-power_conspution['season']=power_conspution['Datetime'].apply(lambda x: 'Winter' if x.month == 12 or x.month == 1 or x.month == 2  else 'Spring' if x.month==3 or x.month==4 or x.month==5 else 'Summer' if x.month==6 or x.month==7 or x.month==8 else 'Autumn' if x.month==9 or x.month==10 or x.month==11 else "")
-power_conspution['name_of_week']=power_conspution['name_of_week'].astype(np.int32)
-holidays=holidays.US()
-power_conspution['holiday']=power_conspution.Datetime.map(lambda x:x in holidays)
-power_conspution=power_conspution.reset_index()
-power_conspution=power_conspution.drop('index',axis=1)
+
 st.subheader('uploaded Dataset')
 st.write(power_conspution.head())
-power_conspution['season']=LabelEncoder().fit_transform(power_conspution['season'])
-power_conspution['holiday']=LabelEncoder().fit_transform(power_conspution['holiday'])
 
-#data imputation
-power_conspution.iloc[10148,1]=4560
-new_values=power_conspution.iloc[87578:87607,1]
-power_conspution.iloc[87650:87679,1]=new_values
-power_conspution=power_conspution.set_index('Datetime')
-values=power_conspution.iloc[103040:103051,1]
-power_conspution.iloc[103064:103075,1]=values
-new_values=power_conspution.iloc[102602:102723,1]
-power_conspution.iloc[103130:103251,1]=new_values
-val=power_conspution.iloc[112847:112892,1]
-power_conspution.iloc[112943:112988,1]=val
-q=power_conspution.iloc[112903:112975,1]
-power_conspution.iloc[112999:113071,1]=q
+# Data preprocessing
+power_conspution = power_conspution.sort_values('Datetime')
+power_conspution['Day'] = power_conspution['Datetime'].dt.day
+power_conspution['dayofyear'] = power_conspution['Datetime'].dt.dayofyear
+power_conspution['year'] = power_conspution['Datetime'].dt.year
+power_conspution['month'] = power_conspution['Datetime'].dt.month
+power_conspution['hour'] = power_conspution['Datetime'].dt.hour
+power_conspution['name_of_week'] = power_conspution['Datetime'].dt.isocalendar().week
+power_conspution['season'] = power_conspution['Datetime'].apply(lambda x: 'Winter' if x.month == 12 or x.month == 1 or x.month == 2 else 'Spring' if x.month == 3 or x.month == 4 or x.month == 5 else 'Summer' if x.month == 6 or x.month == 7 or x.month == 8 else 'Autumn' if x.month == 9 or x.month == 10 or x.month == 11 else "")
+power_conspution['name_of_week'] = power_conspution['name_of_week'].astype(np.int32)
+holidays = holidays.US()
+power_conspution['holiday'] = power_conspution.Datetime.map(lambda x: x in holidays)
+power_conspution = power_conspution.reset_index()
+power_conspution = power_conspution.drop('index',axis=1)
+
+power_conspution['season'] = LabelEncoder().fit_transform(power_conspution['season'])
+power_conspution['holiday'] = LabelEncoder().fit_transform(power_conspution['holiday'])
+
+# Data imputation
+power_conspution.iloc[10148,1] = 4560
+new_values = power_conspution.iloc[87578:87607,1]
+power_conspution.iloc[87650:87679,1] = new_values
+power_conspution = power_conspution.set_index('Datetime')
+values = power_conspution.iloc[103040:103051,1]
+power_conspution.iloc[103064:103075,1] = values
+new_values = power_conspution.iloc[102602:102723,1]
+power_conspution.iloc[103130:103251,1] = new_values
+val = power_conspution.iloc[112847:112892,1]
+power_conspution.iloc[112943:112988,1] = val
+q = power_conspution.iloc[112903:112975,1]
+power_conspution.iloc[112999:113071,1] = q
 power_conspution = power_conspution.dropna()
 
 st.subheader('Power consuption data from 2002 to 2018')
-fig=px.line(power_conspution,x=power_conspution.index,y=power_conspution['PJMW_MW'])
-fig.update_xaxes(rangeslider_visible=True,rangeselector=dict(buttons=list([dict(count=1,label='one year',step='year',stepmode='backward')
-                                                                          ,dict(count=2,label='two year',step='year',stepmode='backward'),
+fig = px.line(power_conspution, x=power_conspution.index, y=power_conspution['PJMW_MW'])
+fig.update_xaxes(rangeslider_visible=True, rangeselector=dict(buttons=list([dict(count=1,label='one year',step='year',stepmode='backward'),
+                                                                          dict(count=2,label='two year',step='year',stepmode='backward'),
                                                                           dict(count=3,label='three year',step='year',stepmode='backward'),dict(step='all')])))
 fig.update_traces(line_color='firebrick')
 st.plotly_chart(fig)
 
+# Plotting pie plots for visual understandings
+new_d = power_conspution.copy()
+new_d['Day'] = new_d['Datetime'].dt.day
+new_d['dayofyear'] = new_d['Datetime'].dt.dayofyear
+new_d['year'] = new_d['Datetime'].dt.year
+new_d['month'] = new_d['Datetime'].dt.month
+new_d['hour'] = new_d['Datetime'].dt.hour
+new_d['name_of_week'] = new_d['Datetime'].dt.isocalendar().week
+new_d['season'] = new_d['Datetime'].apply(lambda x: 'Winter' if x.month == 12 or x.month == 1 or x.month == 2 else 'Spring' if x.month == 3 or x.month == 4 or x.month == 5 else 'Summer' if x.month == 6 or x.month == 7 or x.month == 8 else 'Autumn' if x.month == 9 or x.month == 10 or x.month == 11 else "")
 
-#ploting pie plots for visual understandings 
-    
-new_d=pd.read_excel('PJMW_MW_Hourly.xlsx')
-new_d=new_d.sort_values('Datetime')
-new_d['Day']=new_d['Datetime'].dt.day
-new_d['dayofyear']=new_d['Datetime'].dt.dayofyear
-new_d['year']=new_d['Datetime'].dt.year
-new_d['month']=new_d['Datetime'].dt.month
-new_d['hour']=new_d['Datetime'].dt.hour
-new_d['name_of_week']=new_d['Datetime'].dt.isocalendar().week
-new_d['season']=new_d['Datetime'].apply(lambda x: 'Winter' if x.month == 12 or x.month == 1 or x.month == 2  else 'Spring' if x.month==3 or x.month==4 or x.month==5 else 'Summer' if x.month==6 or x.month==7 or x.month==8 else 'Autumn' if x.month==9 or x.month==10 or x.month==11 else "")
+fig, axs = plt.subplots(3, 1, figsize=(2, 6))
+year = new_d['year'].unique()
+value = [new_d[new_d['year'] == y]['PJMW_MW'].mean() for y in year]
 
-fig,axs=plt.subplots(3,1,figsize=(2,6))
-year=new_d.year.unique()
-value=[new_d[new_d['year']==2002]['PJMW_MW'].mean(),new_d[new_d['year']==2003]['PJMW_MW'].mean(),new_d[new_d['year']==2004]['PJMW_MW'].mean(),new_d[new_d['year']==2005]['PJMW_MW'].mean(),new_d[new_d['year']==2006]['PJMW_MW'].mean(),new_d[new_d['year']==2007]['PJMW_MW'].mean(),new_d[new_d['year']==2008]['PJMW_MW'].mean(),new_d[new_d['year']==2009]['PJMW_MW'].mean(),new_d[new_d['year']==2010]['PJMW_MW'].mean(),new_d[new_d['year']==2011]['PJMW_MW'].mean(),new_d[new_d['year']==2012]['PJMW_MW'].mean(),new_d[new_d['year']==2013]['PJMW_MW'].mean(),new_d[new_d['year']==2014]['PJMW_MW'].mean(),new_d[new_d['year']==2015]['PJMW_MW'].mean(),new_d[new_d['year']==2016]['PJMW_MW'].mean(),new_d[new_d['year']==2017]['PJMW_MW'].mean(),new_d[new_d['year']==2018]['PJMW_MW'].mean()]
-wp = { 'linewidth' : 0.5, 'edgecolor' : "black" }
+wp = {'linewidth': 0.5, 'edgecolor': "black"}
 def func(pct, allvalues):
     absolute = int(pct / 100.*np.sum(allvalues))
     return "{:.1f}%".format(pct, absolute)
-st.subheader('Average power consuption in years from 2002 to 2018')
-axs[0].pie(value,autopct = lambda pct: func(pct, new_d['PJMW_MW']),labels=year,wedgeprops = wp,textprops={'fontsize':3});
-axs[0].set_title('Average power consuption in years from 2002 to 2018',fontsize=3)
 
-new_d['month']=new_d['month'].apply(lambda x: 'Jan' if x==1 else 'Feb' if x==2 else 'March'if x==3 else 'April' if x==4 else 'May' if x==5 else 'June' if x==6 else 'July' if x==7 else 'Aug' if x==8 else 'Sep' if x==9 else 'Oct' if x==10 else 'Nov'  if x==11 else 'Dec' if x==12 else '') 
-new_d.month.unique()
-months=[new_d[new_d['month']=='Jan']['PJMW_MW'].mean(),new_d[new_d['month']=='Feb']['PJMW_MW'].mean(),new_d[new_d['month']=='March']['PJMW_MW'].mean(),new_d[new_d['month']=='April']['PJMW_MW'].mean(),new_d[new_d['month']=='May']['PJMW_MW'].mean(),new_d[new_d['month']=='June']['PJMW_MW'].mean(),new_d[new_d['month']=='July']['PJMW_MW'].mean(),new_d[new_d['month']=='Aug']['PJMW_MW'].mean(),new_d[new_d['month']=='Sep']['PJMW_MW'].mean(),new_d[new_d['month']=='Oct']['PJMW_MW'].mean(),new_d[new_d['month']=='Nov']['PJMW_MW'].mean(),new_d[new_d['month']=='Dec']['PJMW_MW'].mean()]
-label=new_d.month.unique()
+axs[0].pie(value, autopct=lambda pct: func(pct, new_d['PJMW_MW']), labels=year, wedgeprops=wp, textprops={'fontsize': 3})
+axs[0].set_title('Average power consuption in years from 2002 to 2018', fontsize=3)
 
-axs[1].pie(months,autopct = lambda pct: func(pct, new_d['PJMW_MW']),labels=label,wedgeprops = wp,textprops={'fontsize':3});
-axs[1].set_title('Average power consuption in months from 2002 to 2018',fontsize=3)
-season=[new_d[new_d['season']=='Winter']['PJMW_MW'].mean(),new_d[new_d['season']=='Autumn']['PJMW_MW'].mean(),new_d[new_d['season']=='Summer']['PJMW_MW'].mean(),new_d[new_d['season']=='Spring']['PJMW_MW'].mean()]
-label=['Winter', 'Autumn', 'Summer', 'Spring']
+months = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+month_values = [new_d[new_d['month'] == m]['PJMW_MW'].mean() for m in range(1, 13)]
 
-axs[2].pie(season,autopct = lambda pct: func(pct, new_d['PJMW_MW']),labels=label,wedgeprops = wp,textprops={'fontsize':3});
-axs[2].set_title('Average power consuption in  different Seasons of years from 2002 to 2018',fontsize=3)
+axs[1].pie(month_values, autopct=lambda pct: func(pct, new_d['PJMW_MW']), labels=months, wedgeprops=wp, textprops={'fontsize': 3})
+axs[1].set_title('Average power consuption in months from 2002 to 2018', fontsize=3)
+
+seasons = ['Winter', 'Autumn', 'Summer', 'Spring']
+season_values = [new_d[new_d['season'] == s]['PJMW_MW'].mean() for s in seasons]
+
+axs[2].pie(season_values, autopct=lambda pct: func(pct, new_d['PJMW_MW']), labels=seasons, wedgeprops=wp, textprops={'fontsize': 3})
+axs[2].set_title('Average power consuption in different Seasons of years from 2002 to 2018', fontsize=3)
 st.pyplot(fig)
 
 st.sidebar.header('User Input Parameters')
@@ -169,20 +183,20 @@ def user_input_features():
 df = user_input_features()
 st.subheader('User Input parameters')
 st.write(df)
-#creating the features
 
-power_conspution['season']=LabelEncoder().fit_transform(power_conspution['season'])
-power_conspution['holiday']=LabelEncoder().fit_transform(power_conspution['holiday'])
+# Creating the features
+power_conspution['season'] = LabelEncoder().fit_transform(power_conspution['season'])
+power_conspution['holiday'] = LabelEncoder().fit_transform(power_conspution['holiday'])
 
+X = power_conspution[['Day', 'year', 'month', 'hour', 'name_of_week', 'season', 'holiday']]
+Y = power_conspution[['PJMW_MW']]
 
-X=power_conspution[['Day','year','month','hour', 'name_of_week', 'season','holiday']]
-Y=power_conspution[['PJMW_MW']]
-model=xgb.XGBRegressor(base_score=1, booster='gbtree',    
-                       n_estimators=1000,
-                       objective='reg:squarederror',
-                       max_depth=10,
-                       learning_rate=0.1,gamma=1)
-model.fit(X, Y,verbose=100)
+model = xgb.XGBRegressor(base_score=1, booster='gbtree',    
+                         n_estimators=1000,
+                         objective='reg:squarederror',
+                         max_depth=10,
+                         learning_rate=0.1, gamma=1)
+model.fit(X, Y, verbose=100)
 
 if st.button("Predict"):   
     prediction = model.predict(df)
@@ -196,4 +210,4 @@ hide_st_style = """
              header {visibility: hidden;}
              </style>"""
              
-st.markdown(hide_st_style, unsafe_allow_html=True)   
+st.markdown(hide_st_style, unsafe_allow_html=True)
