@@ -193,7 +193,7 @@ with st.container():
         if st.button("Predict"):   
             prediction = model.predict(df)
             st.subheader('Predicted Result')
-            st.write(f"<h2 style ='color:green;text-align:left;'>Power Consumption : {np.round(prediction,2)} %</h2>",unsafe_allow_html = True)
+            st.write(f"<h2 style ='color:green;text-align:left;'>Power Consumption : {np.round(prediction,2)}MW </h2>",unsafe_allow_html = True)
 
         #creating the dataframe to predict the future
         start_date=datetime.datetime(2018,8,3)
