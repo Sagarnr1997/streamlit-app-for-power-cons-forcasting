@@ -16,6 +16,7 @@ import datetime
 from sklearn.preprocessing import LabelEncoder
 import requests
 from io import BytesIO
+import joblib
 
 # Function to fetch data from GitHub repository
 @st.cache
