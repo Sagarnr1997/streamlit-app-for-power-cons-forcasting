@@ -193,8 +193,7 @@ with st.container():
         if st.button("Predict"):   
             prediction = model.predict(df)
             st.subheader('Predicted Result')
-            st.write(f"<h2 style ='color:green;text-align:left;'>output is {np.round(prediction,2)} %</h2>",unsafe_allow_html = True)
-            st.success('The output is {}MW'.format(np.round(prediction,2)))
+            st.write(f"<h2 style ='color:green;text-align:left;'>{np.round(prediction,2)} %</h2>",unsafe_allow_html = True)
 
         #creating the dataframe to predict the future
         start_date=datetime.datetime(2018,8,3)
