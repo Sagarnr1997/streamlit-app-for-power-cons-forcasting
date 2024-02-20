@@ -200,7 +200,7 @@ with st.container():
         power_conspution['season'] = LabelEncoder().fit_transform(power_conspution['season'])
         power_conspution['holiday'] = LabelEncoder().fit_transform(power_conspution['holiday'])
         
-        model = joblib.load('model.pkl')
+        model = joblib.load('https://github.com/Sagarnr1997/streamlit-app-for-power-cons-forcasting/blob/master/model.pkl')
         
         if st.button("Predict"):   
             prediction = model.predict(df)
