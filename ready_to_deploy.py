@@ -110,7 +110,7 @@ with st.container():
         fig.update_xaxes(rangeslider_visible=True,rangeselector=dict(buttons=list([dict(count=1,label='one year',step='year',stepmode='backward')
                                                                                   ,dict(count=2,label='two year',step='year',stepmode='backward'),
                                                                                   dict(count=3,label='three year',step='year',stepmode='backward'),dict(step='all')])))
-        fig.update_traces(line_color='firebrick')
+        fig.update_traces(line_color='indigo')
         st.plotly_chart(fig)
         
         
@@ -228,7 +228,7 @@ with st.container():
         #let me plot the prediction
         st.header('30 days prediction using xg boost')
         fig=px.line(new_data,x=new_data.index,y=new_data['prediction'])
-        fig.update_traces(line_color='firebrick')
+        fig.update_traces(line_color='gold')
         st.plotly_chart(fig)
 
 hide_st_style = """
