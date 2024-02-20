@@ -151,19 +151,6 @@ with st.container():
         axs[2].set_title('Average power consuption in  different Seasons of years from 2002 to 2018',fontsize=3)
         st.pyplot(fig)
         
-        #creating the dataframe to predict the future
-        start_date=datetime.datetime(2018,8,3)
-        end_date=start_date+datetime.timedelta(days=30)
-        dates=[]
-        for i in range(30):
-            for j in range(24):
-                date=start_date+datetime.timedelta(days=i,hours=j)
-                dates.append(date)
-                
-        for date in dates:
-            print(date)
-
-
     elif active_tab == "User inputs and prediction":
         st.sidebar.header('User Input Parameters')
         st.sidebar.subheader('Uploading the Dataset')
@@ -207,6 +194,18 @@ with st.container():
             prediction = model.predict(df)
             st.subheader('Predicted Result')
             st.success('The output is {}MW'.format(np.round(prediction,2)))
+
+        #creating the dataframe to predict the future
+        start_date=datetime.datetime(2018,8,3)
+        end_date=start_date+datetime.timedelta(days=30)
+        dates=[]
+        for i in range(30):
+            for j in range(24):
+                date=start_date+datetime.timedelta(days=i,hours=j)
+                dates.append(date)
+                
+        for date in dates:
+            print(date)
 
         new_data=pd.DataFrame({'Datetime':dates})
         new_data['Day']=new_data['Datetime'].dt.day
